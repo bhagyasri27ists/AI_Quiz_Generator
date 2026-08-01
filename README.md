@@ -38,6 +38,9 @@ AI_Quiz_Generator/
 pip install -r requirements.txt
 streamlit run app.py
 ```
+## 🌐 Live Demo
+
+👉 https://aiquizgenerator-wv9cgqrhziedyku3jkpujm.streamlit.app
 
 ## 👩‍💻 Author
 
