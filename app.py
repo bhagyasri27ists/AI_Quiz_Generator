@@ -1,6 +1,6 @@
 import streamlit as st
 from pdf_reader import extract_text_from_pdf
-from quiz_generator import generate_quiz
+from ai_quiz import generate_ai_quiz
 
 # ---------------- Page Configuration ---------------- #
 
@@ -16,23 +16,15 @@ st.sidebar.title("🧠 AI Quiz Generator")
 st.sidebar.markdown("---")
 st.sidebar.success("✅ Upload PDF")
 st.sidebar.success("✅ Extract Text")
-st.sidebar.success("✅ Generate Quiz")
+st.sidebar.success("✅ Generate AI Quiz")
 st.sidebar.success("✅ Score")
 st.sidebar.markdown("---")
 st.sidebar.write("Developed by Bhagya Sri ❤️")
 
-# ---------------- Session State ---------------- #
-
-if "quiz" not in st.session_state:
-    st.session_state.quiz = None
-
-if "score" not in st.session_state:
-    st.session_state.score = None
-
 # ---------------- Main Title ---------------- #
 
 st.title("🧠 AI Quiz Generator")
-st.write("Upload a PDF file and automatically generate quiz questions.")
+st.write("Upload a PDF file and automatically generate AI quiz questions.")
 st.markdown("---")
 
 # ---------------- Upload PDF ---------------- #
@@ -41,6 +33,8 @@ uploaded_file = st.file_uploader(
     "📄 Choose PDF File",
     type=["pdf"]
 )
+
+# ---------------- Process PDF ---------------- #
 
 if uploaded_file is not None:
 
@@ -57,46 +51,21 @@ if uploaded_file is not None:
 
     st.markdown("---")
 
-    # Generate Quiz
-    if st.button("📝 Generate Quiz"):
-        st.session_state.quiz = generate_quiz(text)
-        st.session_state.score = None
+    # Generate AI Quiz
+    if st.button("🤖 Generate AI Quiz"):
 
-    # Show Quiz
-    if st.session_state.quiz is not None:
+        with st.spinner("Generating quiz using AI..."):
 
-        quiz = st.session_state.quiz
+            quiz = generate_ai_quiz(text)
 
-        st.subheader("📝 Quiz")
+        if quiz:
 
-        for i, q in enumerate(quiz):
+            st.success("✅ AI Quiz Generated Successfully!")
 
-            st.write(f"### Question {i+1}")
-            st.write(q["question"])
+            st.subheader("📝 AI Generated Quiz")
 
-            st.radio(
-                "Choose your answer",
-                q["options"],
-                key=f"q{i}"
-            )
+            st.write(quiz)
 
-            st.write("---")
+        else:
 
-        # Submit Quiz
-        if st.button("✅ Submit Quiz"):
-
-            score = 0
-
-            for i, q in enumerate(quiz):
-
-                if st.session_state[f"q{i}"] == q["answer"]:
-                    score += 1
-
-            st.session_state.score = score
-
-    # Show Score
-    if st.session_state.score is not None:
-
-        st.success(
-            f"🎉 Your Score: {st.session_state.score}/{len(st.session_state.quiz)}"
-        )
+            st.error("❌ AI could not generate quiz. Please check your API Key or internet connection.")
