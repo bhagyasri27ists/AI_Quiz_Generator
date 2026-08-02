@@ -1,7 +1,7 @@
+import streamlit as st
 from groq import Groq
-from config import API_KEY
 
-client = Groq(api_key=API_KEY)
+client = Groq(api_key=st.secrets["API_KEY"])
 
 def generate_ai_quiz(text):
 
@@ -19,23 +19,18 @@ Text:
 """
 
     try:
-
         response = client.chat.completions.create(
-
             model="llama-3.1-8b-instant",
-
             messages=[
                 {
                     "role": "user",
                     "content": prompt
                 }
             ],
-
             temperature=0.5
         )
 
         return response.choices[0].message.content
 
     except Exception as e:
-        print(e)
-        return None
+        return f"Error: {e}"
