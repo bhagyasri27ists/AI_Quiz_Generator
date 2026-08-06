@@ -40,7 +40,7 @@ streamlit run app.py
 ```
 ## 🌐 Live Demo
 
-👉 https://aiquizgenerator-wv9cgqrhziedyku3jkpujm.streamlit.app
+👉 https://aiquizgenerator-wv9cgqrhziedyku3jkpjum.streamlit.app
 
 ## 👩‍💻 Author
 
