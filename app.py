@@ -2,70 +2,116 @@ import streamlit as st
 from pdf_reader import extract_text_from_pdf
 from ai_quiz import generate_ai_quiz
 
-# ---------------- Page Configuration ---------------- #
-
 st.set_page_config(
     page_title="AI Quiz Generator",
-    page_icon="🧠",
+    page_icon="🧠",       
     layout="wide"
 )
 
-# ---------------- Sidebar ---------------- #
-
-st.sidebar.title("🧠 AI Quiz Generator")
-st.sidebar.markdown("---")
-st.sidebar.success("✅ Upload PDF")
-st.sidebar.success("✅ Extract Text")
-st.sidebar.success("✅ Generate AI Quiz")
-st.sidebar.success("✅ Score")
-st.sidebar.markdown("---")
-st.sidebar.write("Developed by Bhagya Sri ❤️")
-
-# ---------------- Main Title ---------------- #
-
 st.title("🧠 AI Quiz Generator")
-st.write("Upload a PDF file and automatically generate AI quiz questions.")
-st.markdown("---")
-
-# ---------------- Upload PDF ---------------- #
+st.write("Upload a PDF and generate an AI-powered quiz.")
 
 uploaded_file = st.file_uploader(
-    "📄 Choose PDF File",
+    "📄 Upload PDF",
     type=["pdf"]
 )
 
-# ---------------- Process PDF ---------------- #
+# ---------------- Generate Quiz ----------------
 
-if uploaded_file is not None:
+if uploaded_file:
+
+    text = extract_text_from_pdf(uploaded_file)
 
     st.success("✅ PDF Uploaded Successfully!")
 
-    st.write("**File Name:**", uploaded_file.name)
-    st.write("**File Size:**", round(uploaded_file.size / 1024, 2), "KB")
-
-    # Extract Text
-    text = extract_text_from_pdf(uploaded_file)
-
-    st.subheader("📄 Extracted Text")
-    st.write(text)
-
-    st.markdown("---")
-
-    # Generate AI Quiz
     if st.button("🤖 Generate AI Quiz"):
 
-        with st.spinner("Generating quiz using AI..."):
-
-            quiz = generate_ai_quiz(text)
+        quiz = generate_ai_quiz(text)
 
         if quiz:
 
-            st.success("✅ AI Quiz Generated Successfully!")
+            st.session_state.quiz = quiz
+            st.session_state.submitted = False
 
-            st.subheader("📝 AI Generated Quiz")
+# ---------------- Quiz ----------------
 
-            st.write(quiz)
+if "quiz" in st.session_state:
+
+    st.markdown("---")
+    st.header("📝 Quiz")
+
+    for i, q in enumerate(st.session_state.quiz):
+
+        st.subheader(f"Question {i+1}")
+
+        st.write(q["question"])
+
+        st.radio(
+            "Choose your answer",
+            q["options"],
+            index=None,
+            key=f"q{i}"
+        )
+
+        st.write("---")
+
+    if st.button("✅ Submit Quiz"):
+
+        st.session_state.submitted = True
+
+# ---------------- Result ----------------
+
+if st.session_state.get("submitted", False):
+
+    score = 0
+
+    st.header("📊 Quiz Result")
+
+    for i, q in enumerate(st.session_state.quiz):
+
+        user_answer = st.session_state.get(f"q{i}")
+
+        if user_answer is None:
+            continue
+
+        correct_answer = q["answer"].strip()
+
+        if user_answer.strip().lower() == correct_answer.lower():
+            score += 1
+
+    st.success(f"🎯 Your Score: {score}/{len(st.session_state.quiz)}")
+
+    if score == len(st.session_state.quiz):
+        st.balloons()
+
+    st.markdown("---")
+    st.header("📑 Answer Review")
+
+    for i, q in enumerate(st.session_state.quiz):
+
+        st.subheader(f"Question {i+1}")
+
+        user_answer = st.session_state.get(f"q{i}")
+
+        correct_answer = q["answer"]
+
+        st.write(q["question"])
+
+        if user_answer is None:
+
+            st.warning("⚠️ Not Answered")
 
         else:
 
-            st.error("❌ AI could not generate quiz. Please check your API Key or internet connection.")
+            st.write(f"**Your Answer:** {user_answer}")
+            st.write(f"**Correct Answer:** {correct_answer}")
+
+            if user_answer.strip().lower() == correct_answer.strip().lower():
+
+                st.success("✅ Correct")
+
+            else:
+
+                st.error("❌ Wrong")
+
+        st.write("---")
